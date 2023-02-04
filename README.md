@@ -1,72 +1,41 @@
+# Contributing
 
+## Writing Commit Messages
 
-<div align="center">
-    <h2>Prisma Client Go</h2>
-    <p><h3 align="center">Typesafe database access for Go</h3></p>
-    <div>
-        <a href="https://github.com/prisma/prisma-client-go/releases"><img src="https://img.shields.io/github/v/release/prisma/prisma-client-go" /></a>
-        <span>&nbsp;&nbsp;</span>
-        <a href="https://github.com/prisma/prisma-client-go/actions/workflows/test.yml"><img src="https://github.com/prisma/prisma-client-go/actions/workflows/test.yml/badge.svg" /></a>
-        <span>&nbsp;&nbsp;</span>
-        <a href="#contributing"><img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" /></a>
-        <span>&nbsp;&nbsp;</span>
-        <a href="./LICENSE"><img src="https://img.shields.io/github/license/prisma/prisma-client-go" /></a>
-        <span>&nbsp;&nbsp;</span>
-        <a href="https://slack.prisma.io/"><img src="https://img.shields.io/badge/chat-on%20slack-blue.svg" /></a>
-    </div>
-    <div>
-        <a href="./docs/quickstart.md">Quickstart</a>
-        <span>&nbsp;&nbsp;•&nbsp;&nbsp;</span>
-        <a href="https://www.prisma.io/">Website</a>
-        <span>&nbsp;&nbsp;•&nbsp;&nbsp;</span>
-        <a href="./docs">Docs</a>
-        <span>&nbsp;&nbsp;•&nbsp;&nbsp;</span>
-        <a href="./docs/reference">API reference</a>
-        <span>&nbsp;&nbsp;•&nbsp;&nbsp;</span>
-        <a href="https://www.prisma.io/blog">Blog</a>
-        <span>&nbsp;&nbsp;•&nbsp;&nbsp;</span>
-        <a href="https://slack.prisma.io/">Slack</a>
-        <span>&nbsp;&nbsp;•&nbsp;&nbsp;</span>
-        <a href="https://twitter.com/prisma">Twitter</a>
-    </div>
-</div>
+We use [conventional commits](https://www.conventionalcommits.org) (also known as semantic commits) to ensure consistent and descriptive commit messages.
 
-<hr>
+## Tests
 
-## Deprecation note
+### Running tests
 
-**Prisma Client Go is no longer officially maintained**. Read [this issue](https://github.com/prisma/prisma-client-go/issues/707) to learn more.
+```shell
+# setup deps & generate code – requires docker to be installed
+# this starts a docker compose stack with all required databases
+go generate -tags setup ./...
+# if you already ran setup, just run the following
+go generate ./...
+go test ./... -v
 
-## Description
-
-Prisma Client Go is an **auto-generated query builder** that enables **type-safe** database access and **reduces boilerplate**. You can use it as an alternative to traditional ORMs such as gorm, xorm, sqlboiler and most database-specific tools.
-
-It is part of the [Prisma](https://www.prisma.io/) ecosystem. Prisma provides database tools for data access, declarative data modeling, schema migrations and visual data management.
-
-_NOTE_: Prisma Client Go is currently offered under our [early access program](https://www.prisma.io/docs/about/releases#product-maturity-levels). There will be documented breaking changes with new [releases](https://github.com/prisma/prisma-client-go/releases).
-
-## Getting started
-
-To get started, [**read our quickstart tutorial**](./docs/quickstart.md) to add Prisma to your project in just a few minutes.
-
-You also might want to read [deployment tips](./docs/deploy.md) and the [full API reference](./docs/reference).
-
-## Notes
-
-The go client works slightly different than the normal Prisma tooling. When you're using the go client, whenever you see Prisma CLI commands such as `prisma ...`, you should always write `go run github.com/prisma/prisma-client-go ...` instead.
-
-If you just work with the Go client and don't have (or want) the NodeJS Prisma CLI installed, you can set up an alias so that you can write `prisma` commands as usual, but it'll invoke the real locally bundled Prisma CLI. To do that, edit your `~/.bashrc` or `~/.zshrc` and add:
-
-```
-alias prisma="go run github.com/prisma/prisma-client-go"
+# to teardown docker containers:
+go generate -tags teardown ./...
 ```
 
-Now `prisma generate` and any other command will work, and it'll just run 1`go run github.com/prisma/prisma-client-go generate` under the hood.
+### How integration tests work
 
-## Contributing
+Most test live in the `test/` directory and are integration tests of the generated client. That means there's a Prisma schema and before running the test, the client needs to be generated first. There may be table-driven tests which, on each individual test run, creates a new isolated database, runs migrations, then run the tests, and finally cleans up the database afterwards.
 
-Check out our [advanced contributing guide](./CONTRIBUTING.md).
+test
 
-## Security
+You can also run individual code generation tests via your editor, however keep in mind you need to run `go generate ./...` before in the directory of the tests you want to run.
 
-If you have a security issue to report, please contact us at [security@prisma.io](mailto:security@prisma.io?subject=[GitHub]%20Prisma%202%20Security%20Report%20Go)
+### E2E tests
+
+End-to-end tests require third party credentials and may also be flaky from time to time. This is why they are not run locally by default and optional in CI.
+
+To run them locally, you need to set up all required credentials (check the [env vars used for CI](https://github.com/prisma/prisma-client-go/blob/a8a05c34aadd035303ea4651fcf6187cc4d039a0/.github/workflows/e2e-test.yml#L43), and then run:
+
+```
+cd test/e2e/
+go generate -tags e2e ./...
+go test ./... -run '^TestE2E.*$' -tags e2e -v
+```
