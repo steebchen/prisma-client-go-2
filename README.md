@@ -22,6 +22,8 @@ go generate -tags teardown ./...
 
 ### How integration tests work
 
+TEST asdf
+
 Most test live in the `test/` directory and are integration tests of the generated client. That means there's a Prisma schema and before running the test, the client needs to be generated first. There may be table-driven tests which, on each individual test run, creates a new isolated database, runs migrations, then run the tests, and finally cleans up the database afterwards.
 
 You can also run individual code generation tests via your editor, however keep in mind you need to run `go generate ./...` before in the directory of the tests you want to run.
