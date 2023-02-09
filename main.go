@@ -45,6 +45,8 @@ func main() {
 		os.Exit(1)
 	}
 
+	log.Printf("asdf")
+
 	// exit when signal triggers
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
